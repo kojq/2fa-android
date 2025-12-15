@@ -162,7 +162,7 @@ object VaultModel {
 
         val file = File(context.noBackupFilesDir, FILE_NAME)
         val tempFile = File(context.noBackupFilesDir, "$FILE_NAME.tmp")
-
+        
         if (tempFile.exists()) {
             Logger.w("VaultModel", "Found orphaned temporary vault file. Deleting.")
             tempFile.delete()
@@ -170,10 +170,11 @@ object VaultModel {
 
         if (!file.exists()) return emptyList()
 
-        val json = file.readText(Charsets.UTF_8)
-        if (json.isBlank()) return null
+        val rawBytes = file.readBytes()
+        if (rawBytes.isEmpty()) return emptyList()
 
         return runCatching {
+            val json = String(rawBytes, Charsets.UTF_8)
             val obj = JSONObject(json)
 
             val version = obj.getInt("version")
