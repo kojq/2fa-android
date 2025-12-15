@@ -11,6 +11,7 @@ import app.ninesevennine.twofactorauthenticator.utils.Logger
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.io.IOException
 import kotlin.io.encoding.Base64
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -57,7 +58,13 @@ object VaultModel {
                 put("version", 1)
                 put("data", Base64.encode(encryptVault(context, vaultItemsAsJson(vaultItems))))
             }.toString().let { jsonString ->
-                File(context.noBackupFilesDir, FILE_NAME).writeText(jsonString, Charsets.UTF_8)
+                val file = File(context.noBackupFilesDir, FILE_NAME)
+                val tempFile = File(context.noBackupFilesDir, "$FILE_NAME.tmp")
+
+                tempFile.writeText(jsonString, Charsets.UTF_8)
+                if (!tempFile.renameTo(file)) {
+                    throw IOException("Failed to rename temp file to vault file")
+                }
             }
         }.onFailure { e ->
             Logger.e("VaultModel", "Error saving vault: ${e.stackTraceToString()}")
@@ -152,7 +159,7 @@ object VaultModel {
         if (!file.exists()) return emptyList()
 
         val json = file.readText(Charsets.UTF_8)
-        if (json.isBlank()) return emptyList()
+        if (json.isBlank()) return null
 
         return runCatching {
             val obj = JSONObject(json)
