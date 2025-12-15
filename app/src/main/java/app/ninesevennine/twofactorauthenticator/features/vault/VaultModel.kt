@@ -61,6 +61,11 @@ object VaultModel {
                 val file = File(context.noBackupFilesDir, FILE_NAME)
                 val tempFile = File(context.noBackupFilesDir, "$FILE_NAME.tmp")
 
+                if (tempFile.exists()) {
+                    Logger.w("VaultModel", "Deleting orphaned temp file before new save.")
+                    tempFile.delete()
+                }
+
                 tempFile.writeText(jsonString, Charsets.UTF_8)
                 if (!tempFile.renameTo(file)) {
                     throw IOException("Failed to rename temp file to vault file")
@@ -156,6 +161,13 @@ object VaultModel {
         Logger.i("VaultModel", "readVault")
 
         val file = File(context.noBackupFilesDir, FILE_NAME)
+        val tempFile = File(context.noBackupFilesDir, "$FILE_NAME.tmp")
+
+        if (tempFile.exists()) {
+            Logger.w("VaultModel", "Found orphaned temporary vault file. Deleting.")
+            tempFile.delete()
+        }
+
         if (!file.exists()) return emptyList()
 
         val json = file.readText(Charsets.UTF_8)
