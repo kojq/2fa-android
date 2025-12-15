@@ -162,7 +162,7 @@ object VaultModel {
 
         val file = File(context.noBackupFilesDir, FILE_NAME)
         val tempFile = File(context.noBackupFilesDir, "$FILE_NAME.tmp")
-        
+
         if (tempFile.exists()) {
             Logger.w("VaultModel", "Found orphaned temporary vault file. Deleting.")
             tempFile.delete()
